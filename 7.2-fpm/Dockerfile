@@ -9,6 +9,7 @@ MAINTAINER Nick Jones <nick@nicksays.co.uk>
 # Install dependencies
 RUN apt-get update \
   && apt-get install -y \
+    pkg-config patch \
     libfreetype6-dev \ 
     libicu-dev \ 
     libjpeg62-turbo-dev \ 
@@ -17,7 +18,15 @@ RUN apt-get update \
     libxslt1-dev \ 
     sendmail-bin \ 
     sendmail \ 
-    sudo
+    sudo \
+    libsodium-dev
+
+ADD "https://git.archlinux.org/svntogit/packages.git/plain/trunk/freetype.patch?h=packages/php" /tmp/freetype.patch
+
+RUN docker-php-source extract; \
+  cd /usr/src/php; \
+  patch -p1 -i /tmp/freetype.patch; \
+  rm /tmp/freetype.patch
 
 # Configure the gd library
 RUN docker-php-ext-configure \
@@ -34,7 +43,8 @@ RUN docker-php-ext-install \
   xsl \ 
   zip \ 
   soap \ 
-  bcmath
+  bcmath \
+  sodium
 
 # Install Xdebug (but don't enable)
 RUN pecl install -o -f xdebug
